@@ -16,10 +16,13 @@ catch { ({ chromium } = require(path.join(process.env.CODEX_PRIMARY_RUNTIME_NODE
     await page.goto('http://127.0.0.1:8765');
     await page.locator('#demo').click();
     await page.locator('#canvas').waitFor({state:'visible'});
-    const box=await page.locator('#canvas').boundingBox();
-    for(const [x,y] of [[230,340],[870,340],[230,480],[870,480+640*Math.tan(Math.PI/18)]]) {
+    // The canvas is taller than the scrollable #viewport; scroll each target into view before clicking.
+    const clickAt=async(x,y)=>{
+      await page.evaluate(y=>{const v=document.getElementById('viewport'),c=document.getElementById('canvas');v.scrollTop=Math.max(0,y/850*c.getBoundingClientRect().height-v.clientHeight/2);},y);
+      const box=await page.locator('#canvas').boundingBox();
       await page.mouse.click(box.x+x/1100*box.width,box.y+y/850*box.height);
-    }
+    };
+    for(const [x,y] of [[230,340],[870,340],[230,480],[870,480+640*Math.tan(Math.PI/18)]]) await clickAt(x,y);
     await page.locator('#override').check();
     await page.locator('#calculate').click();
     assert.equal(await page.locator('#geometryValue').textContent(),'10.00°');
@@ -31,13 +34,13 @@ catch { ({ chromium } = require(path.join(process.env.CODEX_PRIMARY_RUNTIME_NODE
     const downloadPromise=page.waitForEvent('download'); await page.locator('#export').click();
     const dl=await downloadPromise, json=JSON.parse(fs.readFileSync(await dl.path(),'utf8'));
     assert.equal(json.rom.total,55); assert.equal(json.ai_review.performed,false);
-    assert.ok(Math.abs(json.radiographic_measurement.talar_tilt_deg-10)<1e-5);
+    // Mouse clicks snap to device pixels, so match the displayed 2-decimal precision.
+    assert.ok(Math.abs(json.radiographic_measurement.talar_tilt_deg-10)<0.01);
     await page.locator('#undo').click(); assert.equal(await page.locator('#geometryValue').textContent(),'—');
     await page.locator('#view').selectOption('Lateral');
     assert.equal(await page.locator('.point-row').count(),2);
     await page.locator('#zoom').fill('1');
-    const lateral=await page.locator('#canvas').boundingBox();
-    for(const [x,y] of [[300,300],[400,400]]) await page.mouse.click(lateral.x+x/1100*lateral.width,lateral.y+y/850*lateral.height);
+    for(const [x,y] of [[300,300],[400,400]]) await clickAt(x,y);
     await page.locator('#override').check(); await page.locator('#calculate').click();
     assert.match(await page.locator('#geometryNote').textContent(),/mm 미산출/);
     await page.locator('#lawSearch').click(); await page.waitForFunction(()=>document.getElementById('lawResults').textContent.includes('미설정'));
