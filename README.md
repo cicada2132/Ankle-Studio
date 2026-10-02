@@ -9,6 +9,7 @@
 | [`ankle-mvp/`](ankle-mvp/) | 수동 작도 MVP (웹 UI + 선택형 Python 로컬 서버) |
 | [`ankle-mvp/README.md`](ankle-mvp/README.md) | 실행 방법, 선택 기능(AI 검토·법령 API), 주의사항 |
 | [`ankle-mvp/docs/`](ankle-mvp/docs/) | 검증 기록과 다음 단계 |
+| [`docs/reference/`](docs/reference/) | 기획 단계 요구사항과 장해 기준 정리 자료 |
 
 ## 빠른 시작
 
