@@ -1,0 +1,12 @@
+{
+  "name": "ankle-manual-assessment-mvp",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Local-first ankle landmark annotation and separate ROM reference calculator",
+  "scripts": {
+    "build": "node scripts/build.cjs",
+    "lint": "node --check web/core.js && node --check web/app.js && node --check tests/core.test.cjs && python -m compileall -q server.py ai_review.py law_api.py",
+    "test": "node --test tests/core.test.cjs tests/ui-state.test.cjs && python -m unittest discover -s tests -p 'test_*.py' -v",
+    "start": "python server.py"
+  }
+}

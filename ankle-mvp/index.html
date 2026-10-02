@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="ko">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ankle Studio · 발목 수동 작도</title><link rel="stylesheet" href="web/styles.css">
+<script src="web/core.js" defer></script><script src="web/app.js" defer></script></head>
+<body>
+<header><a class="brand" href="#"><span class="brand-icon">A</span> ANKLE STUDIO <span class="tag">RESEARCH MVP</span></a><span class="header-note">수동 작도 · 독립된 ROM 평가</span><button id="newCase" class="ghost">새 평가</button></header>
+<main>
+<div class="intro"><div><p class="eyebrow">DISABILITY RATING CALCULATOR / 01</p><h1>직접 작도하고,<br class="mobile"> 측정 근거를 남기세요.</h1><p>영상 위의 기준점부터 ROM 기준 후보까지, 각 단계를 구분해 기록합니다.</p></div><div class="privacy">개인식별정보가 제거된 영상을 사용하십시오.<br><span>기본 처리는 브라우저 안에서 이루어집니다.</span></div></div>
+<div class="workspace">
+<section class="panel viewer-panel" aria-labelledby="viewerTitle">
+<div class="panel-heading"><div><span class="step">01</span><h2 id="viewerTitle">영상 & 수동 작도</h2></div><span id="imageMeta" class="muted">JPG · PNG</span></div>
+<div class="toolbar"><label class="button primary" for="imageInput">영상 불러오기</label><input type="file" id="imageInput" accept="image/png,image/jpeg" hidden><button id="demo">도형 연습</button><label>촬영 방향 <select id="view"><option>AP</option><option>Mortise</option><option>Lateral</option></select></label><label>측정 측 <select id="side"><option value="unknown">미지정</option><option value="left">왼쪽</option><option value="right">오른쪽</option></select></label></div>
+<div class="instruction" id="instruction" aria-live="polite">영상을 불러온 뒤 기준점을 순서대로 선택하세요.</div>
+<div id="viewport"><div id="empty"><div class="empty-symbol">＋</div><h3>발목 영상을 불러오세요</h3><p>JPG / PNG · 최대 15 MB<br>또는 ‘도형 연습’으로 클릭과 선 연결을 확인하세요.</p><small>연습 이미지는 의료영상이 아닙니다.</small></div><canvas id="canvas" aria-label="영상 작도 영역" hidden></canvas></div>
+<div class="canvas-footer"><label>확대 <input id="zoom" type="range" min="0.5" max="3" value="1" step="0.1"><span id="zoomLabel">100%</span></label><button id="undo">되돌리기</button><button id="reset">작도 초기화</button><button id="overlayExport">작도 PNG 저장</button></div>
+<p class="caption">좌표는 원본 영상 기준으로 저장됩니다. 확대 후에는 스크롤로 이동하세요. 좌우 화면 위치만으로 내·외측을 판단하지 마세요.</p>
+<div id="points" class="point-list"></div>
+</section>
+<aside class="sidebar">
+<section class="panel"><div class="panel-heading"><div><span class="step">02</span><h2>작도 검수</h2></div><span id="reviewBadge" class="badge">미검수</span></div>
+<p class="muted">AI는 선택한 점의 위치만 검수합니다. 좌표를 만들거나 이동하지 않습니다.</p>
+<label class="check"><input type="checkbox" id="consent">AI 검수 요청 시 비식별 원본·작도 영상을 OpenAI API에 전송하는 데 동의합니다.</label>
+<button id="review" class="wide">AI 검수 요청</button><p id="reviewMessage" role="status">선택형 로컬 서버와 API 설정이 필요합니다.</p>
+<label class="check" id="overrideBox"><input type="checkbox" id="override">미검수 또는 불확실한 결과임을 확인했으며, 수동 측정 참고값으로 계산합니다.</label>
+<div id="calibration" hidden><label>물리적 보정값 (mm / 원본 pixel)<input id="mmPerPixel" type="number" min="0.000001" step="any" placeholder="알고 있는 경우에만 입력"></label><label>보정 근거<input id="scaleSource" type="text" maxlength="200" placeholder="예: 같은 평면의 10 mm 마커 = 50 px"></label><small>보정이 없으면 px만 표시합니다.</small></div>
+<button id="calculate" class="primary wide">영상 측정값 계산</button>
+<div class="measure-result"><span>영상 측정 결과</span><strong id="geometryValue">—</strong><p id="geometryNote">참고 측정값이며 단독 진단값이 아닙니다.</p></div></section>
+<section class="panel"><div class="panel-heading"><div><span class="step">03</span><h2>ROM 직접 입력</h2></div><span class="muted">영상과 별도</span></div>
+<p class="muted">실제로 측정한 4방향 운동각을 입력하세요.</p>
+<div class="rom-grid"><label>배굴 <small>표준 20°</small><input id="dorsiflexion" type="number" min="0" max="180" step="0.1" placeholder="°"></label><label>척굴 <small>표준 40°</small><input id="plantar_flexion" type="number" min="0" max="180" step="0.1" placeholder="°"></label><label>외번 <small>표준 20°</small><input id="eversion" type="number" min="0" max="180" step="0.1" placeholder="°"></label><label>내번 <small>표준 30°</small><input id="inversion" type="number" min="0" max="180" step="0.1" placeholder="°"></label></div>
+<div class="rom-summary"><div><span>실제 ROM</span><strong id="total">—<small> / 110°</small></strong></div><div><span>운동제한율</span><strong id="limitation">—</strong></div></div><progress id="romProgress" max="100" value="0" aria-label="ROM 운동제한율"></progress><p id="romWarning" class="warning" role="status"></p>
+<div class="candidate"><span>기준 비교 결과 · 보훈 ROM</span><strong id="candidate">4개 운동각을 입력하세요</strong><p>자동 판정이 아닌 입력값에 따른 기준 후보</p></div>
+</section>
+</aside>
+</div>
+<section class="panel report-panel"><div><p class="eyebrow">04 / RECORD & REFERENCES</p><h2>평가 기록과 근거</h2><p class="muted">작도 수정 이력, 검수 상태, 계산식과 출처를 JSON으로 저장합니다.</p></div><div class="report-actions"><button id="lawSearch">관련 법령·판례 검색</button><button id="export" class="primary">평가 JSON 내보내기</button></div><div id="lawResults" role="status"></div></section>
+<details class="sources"><summary>측정·기준 출처 및 적용 범위</summary><p>이 버전은 교육·연구용 프로토타입입니다. 의료진의 판독 또는 공식 장해판정을 대체하지 않습니다. AI의 해부학적 정확도는 검증되지 않았습니다.</p><p>한쪽 발목의 ROM 구간만 비교합니다. 강직, 인공관절, 인대 불안정성, KL 등급 및 다른 장해는 별도 검토가 필요합니다. ROM 제한율은 보험 지급률이 아닙니다.</p><ul><li><a href="https://www.law.go.kr/flDownload.do?bylClsCd=110201&flSeq=151144423&gubun=" target="_blank" rel="noreferrer">시행규칙 별표 3 · 표준운동각도</a> — 2021-09-27 개정본</li><li><a href="https://www.law.go.kr/LSW/flDownload.do?bylClsCd=110201&flSeq=156423917&gubun=" target="_blank" rel="noreferrer">시행규칙 별표 4 · 상이등급 결정</a> — 2024-04-02 개정본</li><li><a href="https://doi.org/10.1038/s41598-025-99620-6" target="_blank" rel="noreferrer">Noh et al., Scientific Reports (2025)</a> — 작도 개념 참고. P1~P6 및 클릭 순서는 프로젝트 운영 규칙입니다.</li></ul><p>특정 개정본 원문 확인일: 2026-10-02. 현행성 및 사건 적용일은 별도 확인해야 합니다. 일반 영상 측정값으로 stress radiography 진단을 자동화하지 않습니다. DICOM은 지원하지 않습니다.</p></details>
+<footer>ANKLE STUDIO <span>사용자가 작도하고, 코드가 계산합니다.</span></footer>
+</main><div id="toast" role="alert" hidden></div>
+</body></html>
